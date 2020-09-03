@@ -3,8 +3,20 @@
  *
  * See: https://www.gatsbyjs.org/docs/gatsby-config/
  */
+require("dotenv").config({
+  path: `./.env`,
+})
 
 module.exports = {
   /* Your site config here */
-  plugins: [require.resolve(`./src/plugins/gatsby-source-figma-cms`)],
+
+  plugins: [
+    {
+      resolve: require.resolve(`./src/plugins/gatsby-source-figma-cms`),
+      options: {
+        figmaFileUrl: process.env.FIGMA_URL,
+        accessToken: process.env.ACCESS_TOKEN,
+      },
+    },
+  ],
 }

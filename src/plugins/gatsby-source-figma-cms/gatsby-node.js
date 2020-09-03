@@ -1,14 +1,45 @@
-/**
- * Implement Gatsby's Node APIs in this file.
- *
- * See: https://www.gatsbyjs.org/docs/node-apis/
- */
-// You can delete this file if you're not using it
+const axios = require("axios")
 
-/**
- * You can uncomment the following line to verify that
- * your plugin is being loaded in your site.
- *
- * See: https://www.gatsbyjs.org/docs/creating-a-local-plugin/#developing-a-local-plugin-that-is-outside-your-project
- */
-exports.onPreInit = () => console.log("Loaded gatsby-source-figma-cms")
+// constants for your GraphQL Post and Author types
+const POST_NODE_TYPE = `Text`
+exports.sourceNodes = async (
+  { actions, createContentDigest, createNodeId, getNodesByType },
+  pluginOptions
+) => {
+  const { createNode } = actions
+  const textData = await fetchText(
+    pluginOptions.figmaFileUrl,
+    pluginOptions.accessToken
+  )
+
+  const textNodes = textData[0].children.filter(child => child.type === "TEXT")
+  console.log(`Found ${textNodes.length} texts`)
+
+  textNodes.forEach(text => {
+    createNode({
+      ...text,
+      id: createNodeId(`TEXT-${text.id}`),
+      parent: null,
+      children: [],
+      internal: {
+        type: POST_NODE_TYPE,
+        content: JSON.stringify(text),
+        contentDigest: createContentDigest(text),
+      },
+    })
+  })
+  return
+}
+
+const fetchText = async (url, token) => {
+  const fileId = url.split("/")[4]
+  const data = await axios({
+    method: `GET`,
+    url: `https://api.figma.com/v1/files/${fileId}`,
+    headers: {
+      "X-Figma-Token": `${token}`,
+    },
+  })
+
+  return data.data.document.children
+}
