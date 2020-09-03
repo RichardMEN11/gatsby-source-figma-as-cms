@@ -6,5 +6,5 @@
 
 module.exports = {
   /* Your site config here */
-  plugins: [],
+  plugins: [require.resolve(`./src/plugins/gatsby-source-figma-cms`)],
 }
